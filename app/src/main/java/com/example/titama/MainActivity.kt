@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -31,19 +32,21 @@ import com.example.titama.ui.theme.TITAMATheme
 data class NavItem(val label: String, val icon: ImageVector)
 
 class MainActivity : ComponentActivity() {
+    private val trackerViewModel: TrackerViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             TITAMATheme {
-                MainScreen()
+                MainScreen(trackerViewModel)
             }
         }
     }
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: TrackerViewModel) {
     val navItems = listOf(
         NavItem("Dashboard", Icons.Filled.Dashboard),
         NavItem("Tasks", Icons.Filled.CheckCircle),
@@ -72,13 +75,13 @@ fun MainScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.TopStart
         ) {
             when (selectedTab) {
-                0 -> DashboardScreen()
+                0 -> DashboardScreen(viewModel)
                 1 -> PlaceholderScreen("Tasks")
                 2 -> PlaceholderScreen("Pomodoro")
-                3 -> PlaceholderScreen("Tracker")
+                3 -> TrackerScreen(viewModel)
             }
         }
     }
@@ -86,5 +89,7 @@ fun MainScreen() {
 
 @Composable
 fun PlaceholderScreen(name: String) {
-    Text(text = name, fontSize = 24.sp)
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(text = name, fontSize = 24.sp)
+    }
 }

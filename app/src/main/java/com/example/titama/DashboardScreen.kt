@@ -1,6 +1,7 @@
 package com.example.titama
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,10 +9,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -21,28 +28,29 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(viewModel: TrackerViewModel) {
     val today = LocalDate.now()
     val dateFormatted = today.format(DateTimeFormatter.ofPattern("EEE, MMM d"))
+    val entries = viewModel.todayEntries
+
+    var detailEntry by remember { mutableStateOf<TimeEntry?>(null) }
+    var editingEntry by remember { mutableStateOf<TimeEntry?>(null) }
+    var showForm by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        // Top row: Today (left) + Date (right)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Text("Today", fontSize = 28.sp, fontWeight = FontWeight.Bold)
             Text(
-                text = "Today",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = dateFormatted,
+                dateFormatted,
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -50,78 +58,87 @@ fun DashboardScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Current task card
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "CURRENT TASK",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "No task in progress",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Two stat cards side by side
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Time logged today
             Card(modifier = Modifier.weight(1f)) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "TIME LOGGED",
+                        "TIME LOGGED",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "0h 0m",
+                        if (viewModel.totalMinutesToday == 0L) "0h 0m"
+                        else viewModel.totalMinutesToday.toHm(),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
-                        text = "today",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Text("today", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-
-            // Number of entries
             Card(modifier = Modifier.weight(1f)) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "ENTRIES",
+                        "ENTRIES",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "0",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "today",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Text("${entries.size}", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Text("today", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("Recent", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (entries.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "No history yet",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                entries.forEach { entry ->
+                    EntryCard(entry = entry, onClick = { detailEntry = entry })
+                }
+            }
+        }
+    }
+
+    detailEntry?.let { entry ->
+        EntryDetailDialog(
+            entry = entry,
+            onDismiss = { detailEntry = null },
+            onEdit = { editingEntry = entry; detailEntry = null; showForm = true }
+        )
+    }
+
+    if (showForm) {
+        EntryFormDialog(
+            initial = editingEntry,
+            onDismiss = { showForm = false; editingEntry = null },
+            onSave = { entry ->
+                viewModel.updateEntry(entry)
+                showForm = false
+                editingEntry = null
+            }
+        )
     }
 }
