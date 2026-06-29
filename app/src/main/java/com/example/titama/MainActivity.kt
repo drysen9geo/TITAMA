@@ -75,7 +75,7 @@ fun MainScreen() {
             contentAlignment = Alignment.Center
         ) {
             when (selectedTab) {
-                0 -> PlaceholderScreen("Dashboard")
+                0 -> DashboardScreen()
                 1 -> PlaceholderScreen("Tasks")
                 2 -> PlaceholderScreen("Pomodoro")
                 3 -> PlaceholderScreen("Tracker")
