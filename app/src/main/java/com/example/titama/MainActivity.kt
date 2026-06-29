@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.titama.ui.theme.TITAMATheme
 
@@ -43,18 +44,18 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(modifier: Modifier = Modifier) {
     val navItems = listOf(
-        NavItem("Dashboard", Icons.Filled.Dashboard),
-        NavItem("Tasks", Icons.Filled.CheckCircle),
-        NavItem("Pomodoro", Icons.Filled.Timer),
-        NavItem("Tracker", Icons.Filled.WatchLater),
+        NavItem("Today", Icons.Filled.Dashboard),
+        NavItem("Log", Icons.Filled.CheckCircle),
+        NavItem("Totals", Icons.Filled.Timer),
+        NavItem("Tasks", Icons.Filled.WatchLater),
     )
 
     var selectedTab by remember { mutableIntStateOf(0) }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         bottomBar = {
             NavigationBar {
                 navItems.forEachIndexed { index, item ->
@@ -75,16 +76,34 @@ fun MainScreen() {
             contentAlignment = Alignment.Center
         ) {
             when (selectedTab) {
-                0 -> PlaceholderScreen("Dashboard")
-                1 -> PlaceholderScreen("Tasks")
-                2 -> PlaceholderScreen("Pomodoro")
-                3 -> PlaceholderScreen("Tracker")
+                0 -> PlaceholderScreen("Today")
+                1 -> PlaceholderScreen("Log")
+                2 -> PlaceholderScreen("Totals")
+                3 -> PlaceholderScreen("Tasks")
             }
         }
     }
 }
 
 @Composable
-fun PlaceholderScreen(name: String) {
-    Text(text = name, fontSize = 24.sp)
+fun PlaceholderScreen(name: String, modifier: Modifier = Modifier) {
+    Text(text = name, fontSize = 24.sp, modifier = modifier)
 }
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenPreview() {
+    TITAMATheme {
+        MainScreen()
+    }
+}
+
+@Preview(showBackground = true)
+
+@Composable
+column(
+fun PlaceholderScreenPreview() {
+    TITAMATheme {
+        PlaceholderScreen("Preview")
+    }
+})
