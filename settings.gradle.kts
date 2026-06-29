@@ -24,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "TITAMA"
 include(":app")
- 
+include(":app:titamawear")
